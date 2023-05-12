@@ -3,8 +3,22 @@
 #include "MC_VanillaOptions_Functions.h"
 
 using namespace std;
-enum oType { call, put };
+enum oType { call, put, dcall, dput };
+oType opt;
 
+ void getOptionType(string optType){
+
+	if (optType == "call"){
+		opt = call;
+	}
+	else if (optType == "put") {
+		opt = put;
+	}
+	else if (optType == "dcall") {
+		opt = dcall;
+	}
+	else { opt = dput;	}
+}
 double payoffOption(double price, double K, oType opt)
 {
 	double payoff = 0;
@@ -18,10 +32,20 @@ double payoffOption(double price, double K, oType opt)
 		payoff = price < K ? K - price : 0;
 		return payoff; 
 		break;
+
+	case dcall:
+		payoff = price > K ? 1: 0;
+		return payoff;
+		break;
+
+	case dput:
+		payoff = price < K ? 1: 0;
+		return payoff;
+		break;
 	}
 }
 
-double vanillaOptionVal(double S, double K, double r, double div, double vol, double T, double nSim, string optType)
+double vanillaOptionVal(double S, double K, double r, double div, double vol, double T, double nSim, double d_payoff, string optType)
 {
 	double normRand;
 
@@ -33,9 +57,13 @@ double vanillaOptionVal(double S, double K, double r, double div, double vol, do
 	{
 		normRand = genRandomNorm();
 		iPrice = S*exp((r-div-0.5*vol*vol)*T+vol*normRand*sqrt(T));
-		oType opt = optType == "call" ? call : put;
+		//oType opt = optType == "call" ? call : put;
+		getOptionType(optType);
 		payoff = payoffOption(iPrice, K, opt);
 		price += payoff;
+	}
+	if (optType == "dcall" or optType == "dput") {
+		price = price * d_payoff;
 	}
 
 	price = price / nSim;
@@ -46,11 +74,19 @@ double vanillaOptionVal(double S, double K, double r, double div, double vol, do
 
 int main()
 {
-	double S, K, r, vol, T, nSim, div;
+	double S, K, r, vol, T, nSim, div, d_payoff;
 	string optType;
 
-	cout << "What type of option do you want to price? (call, put): ";
+	cout << "What type of option do you want to price? (call, put, dcall, dput): ";
 	cin >> optType;
+	if (optType == "dcall" or optType == "dput")
+	{
+		cout << "For the digital option, what is the payoff if option expires In-The-Money?";
+		cin >> d_payoff;
+	}
+	else {
+		d_payoff = 0.0;
+	}
 	cout << "Enter Strike: ";
 	cin >> K;
 	cout << "Enter Current Stock Price:";
@@ -69,8 +105,8 @@ int main()
 	cout << "Enter the number of MC simulations to be performed:";
 	cin >> nSim;
 
-	double price = vanillaOptionVal(S, K, r,div, vol, T, nSim, optType);
-	cout << "Monte Carlo Price of "<<optType<< "Option is " << price;
+	double price = vanillaOptionVal(S, K, r,div, vol, T, nSim, d_payoff, optType);
+	cout << "Monte Carlo Price of "<<optType<< " option is " << price;
 
 	return 0;
 }
