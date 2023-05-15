@@ -42,10 +42,15 @@ double payoffOption(double price, double K, oType opt)
 		payoff = price < K ? 1: 0;
 		return payoff;
 		break;
+
+	default:
+		cout << "Invalid option type";
 	}
+
+		
 }
 
-double vanillaOptionVal(double S, double K, double r, double div, double vol, double T, double nSim, double d_payoff, string optType)
+double vanillaOptionVal(double* S, double* K, double* r, double* div, double* vol, double* T, double* nSim, double* d_payoff, string optType)
 {
 	double normRand;
 
@@ -53,21 +58,21 @@ double vanillaOptionVal(double S, double K, double r, double div, double vol, do
 	double iPrice=0;
 	double payoff = 0;
 
-	for (int i = 0; i < nSim; i++)
+	for (int i = 0; i < *nSim; i++)
 	{
 		normRand = genRandomNorm();
-		iPrice = S*exp((r-div-0.5*vol*vol)*T+vol*normRand*sqrt(T));
+		iPrice = *S*exp((*r-*div-0.5* *vol* *vol)* *T+ *vol*normRand* sqrt(*T));
 		//oType opt = optType == "call" ? call : put;
 		getOptionType(optType);
-		payoff = payoffOption(iPrice, K, opt);
+		payoff = payoffOption(iPrice, *K, opt);
 		price += payoff;
 	}
 	if (optType == "dcall" or optType == "dput") {
-		price = price * d_payoff;
+		price = price * *d_payoff;
 	}
 
-	price = price / nSim;
-	price = price * exp(-r * T);
+	price = price / *nSim;
+	price = price * exp(-*r * *T);
 
 	return price;
 }
@@ -105,7 +110,7 @@ int main()
 	cout << "Enter the number of MC simulations to be performed:";
 	cin >> nSim;
 
-	double price = vanillaOptionVal(S, K, r,div, vol, T, nSim, d_payoff, optType);
+	double price = vanillaOptionVal(&S, &K, &r,&div, &vol, &T, &nSim, &d_payoff, optType);
 	cout << "Monte Carlo Price of "<<optType<< " option is " << price;
 
 	return 0;
