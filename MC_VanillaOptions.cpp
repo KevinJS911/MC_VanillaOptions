@@ -17,7 +17,14 @@ oType opt;
 	else if (optType == "dcall") {
 		opt = dcall;
 	}
-	else { opt = dput;	}
+	else  if (optType == "dput"){ 
+		opt = dput;	
+	}
+	else 
+	{
+		cout << "Invalid option type" << endl;
+		exit(0);
+	}
 }
 double payoffOption(double price, double K, oType opt)
 {
